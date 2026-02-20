@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Notes.txt®</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.8);
+            --glass: rgba(255, 255, 255, 0.7);
             --border: rgba(255, 255, 255, 1);
             --accent: #007AFF;
+            --danger: #FF3B30;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, system-ui, sans-serif;
             background: #f2f2f7;
             height: 100dvh;
             color: #1c1c1e;
@@ -24,35 +26,35 @@
             flex-direction: column;
         }
 
-        /* Arrière-plan Liquid sans image */
-        .bg-layer {
+        .liquid-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: radial-gradient(circle at 20% 20%, #e5e5ea 0%, #f2f2f7 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
+
+        .blob {
+            position: absolute;
+            background: var(--accent);
+            opacity: 0.08;
+            border-radius: 50%;
+            width: 400px; height: 400px;
+            filter: blur(60px);
+            animation: move 12s infinite alternate;
+        }
+
+        @keyframes move { from { transform: translate(-20%, -20%); } to { transform: translate(40%, 30%); } }
 
         header {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
             background: var(--glass);
-            padding: 40px 20px 15px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 50px 20px 15px;
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+            text-align: center;
         }
 
-        h1 { font-size: 18px; font-weight: 600; margin: 0; }
-
-        .btn-auth {
-            border: 1px solid #d1d1d6;
-            background: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-        }
+        h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: -0.4px; }
 
         #app {
             flex: 1;
@@ -62,56 +64,61 @@
         }
 
         .note-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.05);
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            position: relative;
         }
 
-        .todo-item {
+        .todo-row {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 8px 0;
         }
 
-        .circle-check {
-            width: 20px; height: 20px;
-            border: 2px solid var(--accent);
+        .check {
+            width: 22px; height: 22px;
+            border: 1.5px solid var(--accent);
             border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .circle-check.active { background: var(--accent); position: relative; }
-        .circle-check.active::after {
-            content: ""; position: absolute; left: 6px; top: 2px;
-            width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
+
+        .check.active { background: var(--accent); }
+        .check.active svg { display: block; }
+        .check svg { display: none; width: 12px; height: 12px; stroke: white; }
+
+        .done-text { text-decoration: line-through; opacity: 0.4; }
+
+        .note-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 0.5px solid rgba(0,0,0,0.05);
+        }
+
+        .btn-icon {
+            background: none; border: none; padding: 5px; cursor: pointer;
         }
 
         .dock {
             position: fixed;
             bottom: 30px; left: 50%;
             transform: translateX(-50%);
-            width: 140px; height: 60px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
-            border-radius: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid rgba(0,0,0,0.1);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .btn-add {
-            width: 44px; height: 44px;
-            background: var(--accent);
+            height: 64px; width: 64px;
             border-radius: 50%;
-            border: none;
             display: flex; align-items: center; justify-content: center;
-            color: white; cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
         }
 
         #editor {
@@ -120,168 +127,152 @@
             display: none; flex-direction: column;
         }
 
-        textarea {
-            flex: 1; border: none; padding: 20px;
-            font-size: 17px; outline: none; font-family: inherit;
+        .editor-nav {
+            padding: 50px 20px 10px;
+            display: flex; justify-content: space-between;
+            align-items: center;
         }
 
-        .bar { padding: 40px 20px 10px; display: flex; justify-content: space-between; }
-        .btn-text { background: none; border: none; color: var(--accent); font-size: 17px; cursor: pointer; }
+        textarea {
+            flex: 1; border: none; padding: 25px;
+            font-size: 18px; outline: none; font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .ui-btn {
+            background: none; border: none; color: var(--accent);
+            font-size: 17px; font-weight: 500;
+        }
+
+        .toggle-box {
+            padding: 20px; border-top: 1px solid #f2f2f7;
+            display: flex; align-items: center; gap: 10px;
+        }
     </style>
 </head>
 <body>
 
-<div class="bg-layer"></div>
+<div class="liquid-bg"><div class="blob"></div></div>
 
 <header>
     <h1>Notes.txt®</h1>
-    <button id="loginBtn" class="btn-auth">Connexion</button>
 </header>
 
-<main id="app">
-    </main>
+<main id="app"></main>
 
-<div class="dock">
-    <button class="btn-add" id="openEditorBtn">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-    </button>
+<div class="dock" onclick="openEditor()">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
 </div>
 
 <div id="editor">
-    <div class="bar">
-        <button id="cancelBtn" class="btn-text">Annuler</button>
-        <button id="saveBtn" class="btn-text" style="font-weight:600;">Enregistrer</button>
+    <div class="editor-nav">
+        <button class="ui-btn" onclick="closeEditor()">Annuler</button>
+        <button class="ui-btn" style="font-weight:600" onclick="saveNote()">Enregistrer</button>
     </div>
-    <textarea id="noteInput" placeholder="Nouvelle note..."></textarea>
-    <div style="padding: 20px; border-top: 1px solid #f2f2f7;">
-        <label style="display: flex; align-items: center; gap: 10px;">
-            <input type="checkbox" id="todoToggle" style="width:20px; height:20px;"> Mode Liste
-        </label>
+    <textarea id="noteInput" placeholder="Écrire..."></textarea>
+    <div class="toggle-box">
+        <input type="checkbox" id="modeTodo" style="width:20px; height:20px;">
+        <span style="font-size:15px">Mode Liste</span>
     </div>
 </div>
 
-<script type="module">
-    // Importation directe pour éviter les bugs de chargement
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script>
+    let notes = JSON.parse(localStorage.getItem('notes_db') || '[]');
+    let currentId = null;
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyALatpUtuY2BsFrGf_DTrE3nQnjQHi5MwY",
-        authDomain: "gamesplatform-badcc.firebaseapp.com",
-        projectId: "gamesplatform-badcc",
-        storageBucket: "gamesplatform-badcc.firebasestorage.app",
-        messagingSenderId: "677067722584",
-        appId: "1:677067722584:web:537a6b1e919c82be0fdf2d"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-
-    let user = null;
-
-    // --- ACTIONS BOUTONS ---
-    const loginBtn = document.getElementById('loginBtn');
-    const openBtn = document.getElementById('openEditorBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const editor = document.getElementById('editor');
-
-    loginBtn.addEventListener('click', () => {
-        signInWithPopup(auth, provider).catch(err => alert("Erreur: " + err.message));
-    });
-
-    openBtn.addEventListener('click', () => {
-        editor.style.display = 'flex';
-        document.getElementById('noteInput').focus();
-    });
-
-    cancelBtn.addEventListener('click', () => {
-        editor.style.display = 'none';
-        document.getElementById('noteInput').value = '';
-    });
-
-    saveBtn.addEventListener('click', async () => {
-        const text = document.getElementById('noteInput').value;
-        const isTodo = document.getElementById('todoToggle').checked;
-        if (!text) return;
-
-        const noteData = {
-            text,
-            isTodo,
-            uid: user ? user.uid : 'local',
-            date: Date.now()
-        };
-
-        if (user) {
-            await addDoc(collection(db, "notes"), noteData);
-        } else {
-            const local = JSON.parse(localStorage.getItem('notes_v4') || '[]');
-            local.unshift({...noteData, id: Date.now()});
-            localStorage.setItem('notes_v4', JSON.stringify(local));
-            refreshUI();
-        }
-
-        editor.style.display = 'none';
-        document.getElementById('noteInput').value = '';
-    });
-
-    // --- MISE À JOUR INTERFACE ---
-    onAuthStateChanged(auth, (u) => {
-        user = u;
-        loginBtn.textContent = u ? u.displayName.split(' ')[0] : 'Connexion';
-        refreshUI();
-    });
-
-    function refreshUI() {
-        if (user) {
-            const q = query(collection(db, "notes"), where("uid", "==", user.uid));
-            onSnapshot(q, (snapshot) => {
-                const notes = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                render(notes);
-            });
-        } else {
-            render(JSON.parse(localStorage.getItem('notes_v4') || '[]'));
-        }
-    }
-
-    function render(notes) {
+    function render() {
         const container = document.getElementById('app');
         container.innerHTML = '';
+        
         notes.sort((a,b) => b.date - a.date).forEach(n => {
             const card = document.createElement('div');
             card.className = 'note-card';
             
-            let content = n.isTodo ? n.text.split('\n').map(line => `
-                <div class="todo-item">
-                    <div class="circle-check"></div>
-                    <span>${line}</span>
+            let content = n.isTodo ? n.text.split('\n').filter(t => t.trim()).map((line, i) => `
+                <div class="todo-row" onclick="toggleTask('${n.id}', ${i})">
+                    <div class="check ${n.checked?.includes(i) ? 'active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <span class="${n.checked?.includes(i) ? 'done-text' : ''}">${line}</span>
                 </div>
-            `).join('') : `<div style="white-space:pre-wrap;">${n.text}</div>`;
+            `).join('') : `<div style="white-space:pre-wrap; font-size:16px;">${n.text}</div>`;
 
-            card.innerHTML = content;
-            // Option supprimer sur appui long ou bouton simple
-            card.addEventListener('contextmenu', async (e) => {
-                e.preventDefault();
-                if(confirm("Supprimer la note ?")) {
-                    if(user) await deleteDoc(doc(db, "notes", n.id));
-                    else {
-                        const local = JSON.parse(localStorage.getItem('notes_v4')).filter(note => note.id !== n.id);
-                        localStorage.setItem('notes_v4', JSON.stringify(local));
-                        refreshUI();
-                    }
-                }
-            });
+            card.innerHTML = `
+                ${content}
+                <div class="note-actions">
+                    <button class="btn-icon" onclick="editNote('${n.id}')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
+                    </button>
+                    <button class="btn-icon" onclick="deleteNote('${n.id}')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+            `;
             container.appendChild(card);
         });
     }
 
-    refreshUI();
+    function saveNote() {
+        const text = document.getElementById('noteInput').value;
+        const isTodo = document.getElementById('modeTodo').checked;
+        if(!text) return;
+
+        if(currentId) {
+            notes = notes.map(n => n.id == currentId ? {...n, text, isTodo} : n);
+        } else {
+            notes.push({ id: Date.now().toString(), text, isTodo, date: Date.now(), checked: [] });
+        }
+        
+        sync();
+        closeEditor();
+    }
+
+    function toggleTask(noteId, index) {
+        notes = notes.map(n => {
+            if(n.id == noteId) {
+                let checked = n.checked || [];
+                if(checked.includes(index)) checked = checked.filter(i => i !== index);
+                else checked.push(index);
+                return {...n, checked};
+            }
+            return n;
+        });
+        sync();
+    }
+
+    function deleteNote(id) {
+        notes = notes.filter(n => n.id != id);
+        sync();
+    }
+
+    function editNote(id) {
+        const n = notes.find(n => n.id == id);
+        currentId = id;
+        document.getElementById('noteInput').value = n.text;
+        document.getElementById('modeTodo').checked = n.isTodo;
+        document.getElementById('editor').style.display = 'flex';
+    }
+
+    function openEditor() {
+        currentId = null;
+        document.getElementById('noteInput').value = '';
+        document.getElementById('modeTodo').checked = false;
+        document.getElementById('editor').style.display = 'flex';
+    }
+
+    function closeEditor() {
+        document.getElementById('editor').style.display = 'none';
+    }
+
+    function sync() {
+        localStorage.setItem('notes_db', JSON.stringify(notes));
+        render();
+    }
+
+    render();
 </script>
 </body>
 </html>
